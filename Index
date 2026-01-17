@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Lead Scorer Generator for Law Firms</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #0a0a0a;
+        }
+        .gradient-text {
+            background: linear-gradient(90deg, #00d4ff 0%, #00ff9d 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+<body class="min-h-screen py-8 px-4">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-cyan-500 to-green-400 rounded-lg p-8 mb-8 shadow-2xl">
+            <h1 class="text-3xl font-bold mb-2 text-black">🤖 AI Lead Scorer Generator</h1>
+            <p class="text-gray-900">Generate custom n8n workflows for your law firm practice area</p>
+        </div>
+
+        <!-- Email Capture -->
+        <div class="bg-gradient-to-br from-cyan-900/40 to-green-900/40 border-2 border-cyan-500/50 rounded-lg p-6 mb-6 shadow-2xl">
+            <div class="flex items-start gap-3 mb-4">
+                <div class="text-3xl">🎁</div>
+                <div class="flex-1">
+                    <h2 class="text-xl font-bold text-white mb-2">Get the Complete n8n Template + Updates</h2>
+                    <p class="text-gray-300 text-sm">Enter your email to receive the ready-to-import n8n workflow JSON file + get notified when I add new practice areas and features.</p>
+                </div>
+            </div>
+            
+            <div id="emailForm" class="flex flex-col sm:flex-row gap-3">
+                <input 
+                    type="email" 
+                    id="emailInput" 
+                    placeholder="your@email.com" 
+                    class="flex-1 px-4 py-3 bg-gray-800 text-white border border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                    required
+                >
+                <button 
+                    onclick="submitEmail()" 
+                    id="emailButton"
+                    class="bg-gradient-to-r from-cyan-500 to-green-500 hover:from-cyan-600 hover:to-green-600 text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg whitespace-nowrap"
+                >
+                    Get Free Access
+                </button>
+            </div>
+            
+            <div id="emailSuccess" class="hidden mt-4 p-4 bg-green-900/50 border border-green-500 rounded-lg">
+                <p class="text-green-300 font-semibold">✓ Success! Check your email for the n8n template.</p>
+            </div>
+            
+            <div id="emailError" class="hidden mt-4 p-4 bg-red-900/50 border border-red-500 rounded-lg">
+                <p class="text-red-300 font-semibold">Something went wrong. Please try again.</p>
+            </div>
+            
+            <p class="text-gray-400 text-xs mt-3">No spam. Unsubscribe anytime. I'll only email you about new features and law firm automation tips.</p>
+        </div>
+
+        <!-- Practice Area Selection -->
+        <div class="bg-gray-900 rounded-lg shadow-2xl p-6 mb-6 border border-gray-800">
+            <label class="block text-white text-lg font-semibold mb-3">
+                Select Your Practice Area:
+            </label>
+            <select id="practiceArea" class="w-full p-3 bg-gray-800 text-white border border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500">
+                <option value="">-- Choose Practice Area --</option>
+                <option value="personal-injury">Personal Injury</option>
+                <option value="family-law">Family Law (Divorce, Custody)</option>
+                <option value="criminal-defense">Criminal Defense</option>
+                <option value="employment-law">Employment Law</option>
+                <option value="medical-malpractice">Medical Malpractice</option>
+                <option value="workers-comp">Workers' Compensation</option>
+                <option value="estate-planning">Estate Planning / Probate</option>
+                <option value="business-law">Business / Corporate Law</option>
+            </select>
+        </div>
+
+        <!-- Output Sections (Hidden until selection) -->
+        <div id="outputSection" class="hidden space-y-6">
+            <!-- Form Questions -->
+            <div class="bg-gray-900 rounded-lg shadow-2xl p-6 border border-gray-800">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-white">📋 n8n Form Questions</h2>
+                    <button onclick="copyToClipboard('formQuestions')" class="bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-lg">
+                        Copy JSON
+                    </button>
+                </div>
+                <pre id="formQuestions" class="bg-gray-950 p-4 rounded border border-gray-800 overflow-x-auto text-sm"><code class="text-green-400"></code></pre>
+            </div>
+
+            <!-- AI Scoring Prompt -->
+            <div class="bg-gray-900 rounded-lg shadow-2xl p-6 border border-gray-800">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-white">🤖 AI Agent Scoring Prompt</h2>
+                    <button onclick="copyToClipboard('aiPrompt')" class="bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-lg">
+                        Copy Prompt
+                    </button>
+                </div>
+                <pre id="aiPrompt" class="bg-gray-950 p-4 rounded border border-gray-800 overflow-x-auto text-sm whitespace-pre-wrap"><code class="text-gray-300"></code></pre>
+            </div>
+
+            <!-- Scoring Criteria Reference -->
+            <div class="bg-gray-900 rounded-lg shadow-2xl p-6 border border-gray-800">
+                <h2 class="text-xl font-bold text-white mb-4">📊 Scoring Criteria Breakdown</h2>
+                <div id="scoringBreakdown" class="space-y-2 text-sm"></div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-8 text-gray-400">
+            <p class="mb-2">Built by <strong class="gradient-text">AIvertise</strong> - AI Automation for Law Firms</p>
+            <p class="text-sm">Watch the full tutorial: <a href="https://youtube.com/@Tauras.tob1" class="text-cyan-400 hover:text-cyan-300 hover:underline">youtube.com/@Tauras.tob1</a></p>
+        </div>
+    </div>
+
+    <script>
+        const practiceAreaData = {
+            'personal-injury': {
+                title: 'Personal Injury',
+                formQuestions: [
+                    { q: 'What type of accident/injury?', type: 'dropdown', options: ['Car Accident', 'Motorcycle Accident', 'Truck Accident', 'Slip and Fall', 'Workplace Injury', 'Dog Bite', 'Assault', 'Other'] },
+                    { q: 'When did the incident happen?', type: 'date' },
+                    { q: 'Where did this happen? (City/Location)', type: 'text' },
+                    { q: 'Describe what happened and how the injury occurred', type: 'paragraph' },
+                    { q: 'What injuries did you sustain?', type: 'paragraph' },
+                    { q: 'Did you receive medical treatment?', type: 'dropdown', options: ['Yes - Emergency Room', 'Yes - Hospitalized (overnight or longer)', 'Yes - Doctor/Urgent Care visit', 'Yes - Physical Therapy/Chiropractor', 'No medical treatment yet'] },
+                    { q: 'Are you still receiving medical treatment?', type: 'dropdown', options: ['Yes, currently in treatment', 'No, treatment completed', 'No, haven\'t started treatment yet'] },
+                    { q: 'Who was at fault for the incident?', type: 'dropdown', options: ['Clearly the other party\'s fault', 'Mostly the other party\'s fault', 'Shared fault (both parties)', 'Unclear/Disputed', 'It was my fault'] },
+                    { q: 'Was there a police report filed?', type: 'dropdown', options: ['Yes', 'No', 'Don\'t know'] },
+                    { q: 'Are you currently employed?', type: 'dropdown', options: ['Yes, full-time', 'Yes, part-time', 'Self-employed', 'Unemployed', 'Retired', 'Disabled'] },
+                    { q: 'Did you miss work due to this incident?', type: 'dropdown', options: ['Yes, still unable to work', 'Yes, missed some time but back now', 'No, didn\'t miss work', 'Not applicable'] },
+                    { q: 'Does the at-fault party have insurance?', type: 'dropdown', options: ['Yes, I have their insurance info', 'Yes, but don\'t have details yet', 'No insurance', 'Unknown'] }
+                ],
+                scoringCriteria: `
+**INJURY SEVERITY (0-40 points):**
+- Hospitalized overnight or surgery: 40 points
+- ER visit + ongoing treatment: 30 points
+- Doctor visit + treatment: 20 points
+- Minor treatment only: 10 points
+- No medical treatment: 0 points
+
+**LIABILITY CLARITY (0-20 points):**
+- Clearly other party's fault + police report: 20 points
+- Clearly other party's fault, no report: 15 points
+- Mostly other party's fault: 10 points
+- Shared fault: 5 points
+- Unclear or self-fault: 0 points
+
+**TIMEFRAME (0-15 points):**
+- Within 6 months: 15 points
+- 6 months - 1 year: 12 points
+- 1-2 years: 8 points
+- 2+ years: 0 points (statute concerns)
+
+**LOCATION (0-10 points):**
+- In primary service area: 10 points
+- In state/country (can handle): 7 points
+- Outside jurisdiction: 0 points
+
+**EMPLOYMENT/LOST WAGES (0-10 points):**
+- Employed + still unable to work: 10 points
+- Employed + missed some work: 7 points
+- Employed + no missed work: 3 points
+- Unemployed/Retired: 0 points
+
+**INSURANCE (0-5 points):**
+- Has insurance info: 5 points
+- Insurance exists, no info: 3 points
+- No insurance: 0 points
+
+**RED FLAGS (Deductions):**
+- Currently with another lawyer: -30
+- Over 2 years ago: -50
+- Self-admitted fault: -50
+- Property damage only: -40
+                `.trim()
+            },
+            'family-law': {
+                title: 'Family Law (Divorce/Custody)',
+                formQuestions: [
+                    { q: 'What type of family law matter?', type: 'dropdown', options: ['Divorce', 'Child Custody', 'Child Support', 'Spousal Support/Alimony', 'Paternity', 'Domestic Violence/Protection Order', 'Adoption', 'Other'] },
+                    { q: 'Are you currently married/in a relationship with the other party?', type: 'dropdown', options: ['Yes, married', 'Yes, domestic partnership', 'Separated', 'Divorced', 'Never married'] },
+                    { q: 'How long were you married/together?', type: 'text' },
+                    { q: 'Do you have children together?', type: 'dropdown', options: ['Yes', 'No'] },
+                    { q: 'If yes, how many children and their ages?', type: 'text' },
+                    { q: 'Briefly describe your situation', type: 'paragraph' },
+                    { q: 'What is your primary goal?', type: 'dropdown', options: ['Fair division of assets', 'Full/primary custody of children', 'Child support enforcement', 'Spousal support', 'Protection from abuse', 'Quick/amicable resolution', 'Other'] },
+                    { q: 'Is there significant marital property/assets?', type: 'dropdown', options: ['Yes - home ownership', 'Yes - business ownership', 'Yes - substantial savings/investments', 'Yes - retirement accounts', 'No significant assets', 'Unknown'] },
+                    { q: 'Are you currently employed?', type: 'dropdown', options: ['Yes, full-time', 'Yes, part-time', 'Self-employed', 'Unemployed', 'Stay-at-home parent'] },
+                    { q: 'Is there any history of domestic violence or abuse?', type: 'dropdown', options: ['Yes, documented', 'Yes, but not documented', 'No', 'Prefer not to say'] },
+                    { q: 'Does the other party have legal representation?', type: 'dropdown', options: ['Yes, they have a lawyer', 'No, they don\'t have a lawyer yet', 'Unknown'] },
+                    { q: 'How urgent is your situation?', type: 'dropdown', options: ['Emergency (safety concern)', 'Very urgent (court date coming)', 'Moderately urgent', 'Not urgent, planning ahead'] }
+                ],
+                scoringCriteria: `
+**CASE COMPLEXITY (0-35 points):**
+- High-conflict divorce + custody + assets: 35 points
+- Divorce with children + significant assets: 28 points
+- Divorce with children OR significant assets: 20 points
+- Simple divorce, no children/assets: 10 points
+
+**URGENCY (0-20 points):**
+- Emergency/safety concern: 20 points
+- Court date within 30 days: 18 points
+- Active case, needs representation: 15 points
+- Planning/consultation stage: 8 points
+
+**ASSET VALUE (0-20 points):**
+- Business ownership: 20 points
+- Home + retirement accounts: 15 points
+- Home ownership: 12 points
+- Modest assets: 8 points
+- No significant assets: 3 points
+
+**CUSTODY ISSUES (0-15 points):**
+- Contested custody + abuse allegations: 15 points
+- Contested custody: 12 points
+- Agreed custody, need documentation: 8 points
+- No children: 0 points
+
+**EMPLOYMENT/ABILITY TO PAY (0-10 points):**
+- Employed full-time: 10 points
+- Employed part-time: 7 points
+- Self-employed: 8 points
+- Unemployed (but other party has income): 5 points
+- Both parties unemployed: 2 points
+
+**RED FLAGS (Deductions):**
+- Already represented by another attorney: -30
+- Unrealistic expectations: -15
+- No ability to pay retainer: -20
+                `.trim()
+            },
+            'criminal-defense': {
+                title: 'Criminal Defense',
+                formQuestions: [
+                    { q: 'What type of charges are you facing?', type: 'dropdown', options: ['DUI/DWI', 'Drug Possession', 'Drug Trafficking/Distribution', 'Assault/Battery', 'Theft/Burglary', 'Domestic Violence', 'White Collar Crime', 'Sex Crime', 'Weapons Charge', 'Traffic Violations', 'Other Felony', 'Other Misdemeanor'] },
+                    { q: 'Have you been arrested?', type: 'dropdown', options: ['Yes, currently in custody', 'Yes, released on bail', 'Yes, released on own recognizance', 'No, not yet arrested', 'Under investigation'] },
+                    { q: 'When did the incident/arrest occur?', type: 'date' },
+                    { q: 'Where did this happen? (City/State)', type: 'text' },
+                    { q: 'Do you have a court date scheduled?', type: 'dropdown', options: ['Yes, within 1 week', 'Yes, within 1 month', 'Yes, more than 1 month away', 'No court date yet', 'Unknown'] },
+                    { q: 'Briefly describe what happened', type: 'paragraph' },
+                    { q: 'Is this your first offense?', type: 'dropdown', options: ['Yes, first offense', 'No, I have prior convictions', 'No, I have prior arrests but no convictions'] },
+                    { q: 'Have you been assigned a public defender?', type: 'dropdown', options: ['Yes', 'No', 'Declined public defender', 'Unknown'] },
+                    { q: 'Did you give a statement to police?', type: 'dropdown', options: ['Yes', 'No', 'Prefer not to say'] },
+                    { q: 'Are you currently employed?', type: 'dropdown', options: ['Yes, full-time', 'Yes, part-time', 'Self-employed', 'Unemployed', 'Student'] },
+                    { q: 'How did you find us?', type: 'dropdown', options: ['Google search', 'Referral from friend/family', 'Referral from another lawyer', 'Social media', 'Other'] }
+                ],
+                scoringCriteria: `
+**CHARGE SEVERITY (0-40 points):**
+- Felony with mandatory minimum: 40 points
+- Serious felony: 35 points
+- Lower-level felony: 25 points
+- Serious misdemeanor: 15 points
+- Minor misdemeanor/traffic: 5 points
+
+**URGENCY (0-20 points):**
+- In custody now: 20 points
+- Court date within 1 week: 18 points
+- Court date within 1 month: 15 points
+- Court date 1+ months away: 10 points
+- No court date yet: 5 points
+
+**CASE DEFENSIBILITY (0-15 points):**
+- Strong defense (rights violation, weak evidence): 15 points
+- Moderate defense (some mitigating factors): 10 points
+- Difficult defense (strong evidence against): 5 points
+- Admitted guilt to police: 0 points
+
+**PRIOR RECORD (0-15 points):**
+- First offense: 15 points
+- Prior arrests, no convictions: 10 points
+- Prior convictions (can still help): 8 points
+- Extensive criminal history: 3 points
+
+**ABILITY TO PAY (0-10 points):**
+- Employed full-time: 10 points
+- Employed part-time: 7 points
+- Unemployed but has resources: 5 points
+- Unemployed, limited resources: 2 points
+
+**RED FLAGS (Deductions):**
+- Already represented: -30
+- Seeking unrealistic outcome: -15
+- Gave detailed confession: -10
+                `.trim()
+            },
+            'employment-law': {
+                title: 'Employment Law',
+                formQuestions: [
+                    { q: 'What type of employment issue?', type: 'dropdown', options: ['Wrongful Termination', 'Discrimination', 'Sexual Harassment', 'Wage/Overtime Disputes', 'Retaliation', 'Hostile Work Environment', 'Contract Dispute', 'Severance Negotiation', 'Other'] },
+                    { q: 'Are you currently employed at this company?', type: 'dropdown', options: ['Yes, still employed', 'No, was terminated', 'No, I resigned', 'On leave'] },
+                    { q: 'If terminated, when did this happen?', type: 'date' },
+                    { q: 'How long did you work for this employer?', type: 'text' },
+                    { q: 'Company size (approximate number of employees)', type: 'dropdown', options: ['1-14 employees', '15-49 employees', '50-99 employees', '100-499 employees', '500+ employees', 'Unknown'] },
+                    { q: 'Briefly describe what happened', type: 'paragraph' },
+                    { q: 'Did you file any internal complaints?', type: 'dropdown', options: ['Yes, with HR', 'Yes, with supervisor', 'Yes, with ethics hotline', 'No', 'Unknown'] },
+                    { q: 'Do you have documentation? (emails, texts, witness statements)', type: 'dropdown', options: ['Yes, substantial documentation', 'Yes, some documentation', 'No documentation', 'Unknown'] },
+                    { q: 'Have you filed with EEOC or state agency?', type: 'dropdown', options: ['Yes, already filed', 'No, not yet', 'Don\'t know what that is'] },
+                    { q: 'What is your desired outcome?', type: 'dropdown', options: ['Financial compensation', 'Get my job back', 'Both compensation and reinstatement', 'Clear my record', 'Hold them accountable'] },
+                    { q: 'What was your approximate annual salary?', type: 'dropdown', options: ['Under €20,000', '€20,000-€40,000', '€40,000-€60,000', '€60,000-€100,000', 'Over €100,000', 'Prefer not to say'] }
+                ],
+                scoringCriteria: `
+**CLAIM STRENGTH (0-35 points):**
+- Protected class discrimination + documentation: 35 points
+- Clear wrongful termination + documentation: 30 points
+- Harassment/hostile environment + witnesses: 28 points
+- Wage violations with records: 25 points
+- Weak claim or no evidence: 5 points
+
+**DOCUMENTATION (0-20 points):**
+- Extensive written evidence: 20 points
+- Some written evidence + witnesses: 15 points
+- Witness testimony only: 10 points
+- No evidence/documentation: 0 points
+
+**COMPANY SIZE (0-15 points):**
+- 500+ employees (deep pockets): 15 points
+- 100-499 employees: 12 points
+- 50-99 employees: 10 points
+- 15-49 employees: 7 points
+- Under 15 employees (limited coverage): 3 points
+
+**TIMEFRAME (0-15 points):**
+- Within 6 months: 15 points
+- 6 months - 1 year: 12 points
+- 1-2 years: 8 points
+- 2+ years: 2 points (statute concerns)
+
+**DAMAGES/SALARY (0-10 points):**
+- Over €100,000 salary: 10 points
+- €60,000-€100,000: 8 points
+- €40,000-€60,000: 6 points
+- €20,000-€40,000: 4 points
+- Under €20,000: 2 points
+
+**ADMINISTRATIVE STEPS (0-5 points):**
+- Already filed EEOC/agency complaint: 5 points
+- Not yet filed: 0 points
+
+**RED FLAGS (Deductions):**
+- Statute of limitations expired: -50
+- Poor performance documentation: -15
+- Resigned without exhausting remedies: -10
+                `.trim()
+            },
+            'medical-malpractice': {
+                title: 'Medical Malpractice',
+                formQuestions: [
+                    { q: 'What type of medical error occurred?', type: 'dropdown', options: ['Surgical Error', 'Misdiagnosis', 'Delayed Diagnosis', 'Medication Error', 'Birth Injury', 'Anesthesia Error', 'Hospital-Acquired Infection', 'Failure to Treat', 'Other'] },
+                    { q: 'When did the medical error occur?', type: 'date' },
+                    { q: 'What medical facility/hospital did this occur at?', type: 'text' },
+                    { q: 'What was the name of the doctor/medical professional involved?', type: 'text' },
+                    { q: 'What was the original medical condition being treated?', type: 'paragraph' },
+                    { q: 'Describe what went wrong and how you were harmed', type: 'paragraph' },
+                    { q: 'What injuries or complications resulted from the error?', type: 'paragraph' },
+                    { q: 'Did you require additional medical treatment to fix the error?', type: 'dropdown', options: ['Yes - Emergency surgery', 'Yes - Hospitalization', 'Yes - Additional procedures', 'Yes - Ongoing treatment', 'No additional treatment needed yet', 'Resulted in permanent disability', 'Resulted in death of loved one'] },
+                    { q: 'Do you have your complete medical records?', type: 'dropdown', options: ['Yes, I have them', 'Yes, but haven\'t reviewed them', 'No, need to request them', 'Hospital refused to provide them'] },
+                    { q: 'Have you consulted with another medical professional about this?', type: 'dropdown', options: ['Yes - they confirmed it was malpractice', 'Yes - they were unsure', 'No, not yet', 'Planning to get second opinion'] },
+                    { q: 'What is your current medical status?', type: 'dropdown', options: ['Still recovering - ongoing treatment', 'Recovered but with permanent complications', 'Fully recovered', 'Condition worsened/permanent disability', 'Wrongful death claim'] }
+                ],
+                scoringCriteria: `
+**SEVERITY OF HARM (0-40 points):**
+- Death or permanent severe disability: 40 points
+- Permanent injury requiring ongoing care: 35 points
+- Serious injury, full recovery possible: 25 points
+- Moderate injury with complications: 15 points
+- Minor injury, recovered: 5 points
+
+**STANDARD OF CARE BREACH (0-25 points):**
+- Clear deviation + expert confirms: 25 points
+- Obvious error + medical records support: 20 points
+- Likely breach, needs expert review: 15 points
+- Unclear if standard violated: 5 points
+
+**CAUSATION (0-15 points):**
+- Direct causation clearly documented: 15 points
+- Strong causal link: 12 points
+- Possible causation: 8 points
+- Weak/unclear causation: 3 points
+
+**DOCUMENTATION (0-10 points):**
+- Complete medical records + expert opinion: 10 points
+- Medical records obtained: 7 points
+- Partial records: 5 points
+- No records yet: 2 points
+
+**TIMEFRAME (0-10 points):**
+- Within 1 year: 10 points
+- 1-2 years: 7 points
+- 2-3 years: 4 points
+- 3+ years: 0 points (statute concern)
+
+**RED FLAGS (Deductions):**
+- Pre-existing condition complicates case: -10
+- Signed arbitration agreement: -15
+- Statute of limitations expired: -50
+- Patient non-compliance documented: -20
+                `.trim()
+            },
+            'workers-comp': {
+                title: 'Workers\' Compensation',
+                formQuestions: [
+                    { q: 'What type of workplace injury occurred?', type: 'dropdown', options: ['Slip/Trip and Fall', 'Lifting/Repetitive Motion Injury', 'Machinery/Equipment Accident', 'Vehicle/Forklift Accident', 'Chemical Exposure', 'Falling Object', 'Electrocution', 'Burn Injury', 'Occupational Disease', 'Other'] },
+                    { q: 'When did the injury occur?', type: 'date' },
+                    { q: 'What is your employer\'s name?', type: 'text' },
+                    { q: 'How many employees work for this company?', type: 'dropdown', options: ['1-5 employees', '6-15 employees', '16-50 employees', '51-100 employees', '100+ employees', 'Unknown'] },
+                    { q: 'Describe how the injury happened', type: 'paragraph' },
+                    { q: 'What injuries did you sustain?', type: 'paragraph' },
+                    { q: 'Did you report the injury to your employer?', type: 'dropdown', options: ['Yes, immediately', 'Yes, within 24 hours', 'Yes, within a week', 'Yes, but after 1 week', 'No, not yet', 'Employer refuses to document it'] },
+                    { q: 'Have you seen a doctor for this injury?', type: 'dropdown', options: ['Yes - Company doctor', 'Yes - My own doctor', 'Yes - Emergency Room', 'Yes - Hospital admission', 'No, not yet', 'Employer denied medical treatment'] },
+                    { q: 'Have you filed a workers\' comp claim?', type: 'dropdown', options: ['Yes - Approved', 'Yes - Denied', 'Yes - Still pending', 'No, not yet', 'Employer said not to file'] },
+                    { q: 'Are you currently able to work?', type: 'dropdown', options: ['No - Completely unable to work', 'No - On temporary disability', 'Yes - Light duty/restricted work', 'Yes - Full duty but with pain', 'Yes - Fully recovered'] },
+                    { q: 'Were you injured while following safety procedures?', type: 'dropdown', options: ['Yes, following all procedures', 'Safety equipment was not provided', 'Was not trained on procedure', 'Employer pressured me to skip safety', 'Unsure'] }
+                ],
+                scoringCriteria: `
+**INJURY SEVERITY (0-35 points):**
+- Permanent total disability: 35 points
+- Serious injury requiring surgery: 30 points
+- Significant injury, long recovery: 25 points
+- Moderate injury: 15 points
+- Minor injury, quick recovery: 5 points
+
+**CLAIM STATUS (0-25 points):**
+- Denied claim + employer retaliation: 25 points
+- Denied claim: 20 points
+- Delayed/disputed claim: 15 points
+- Approved but inadequate benefits: 12 points
+- Not yet filed but clear case: 10 points
+
+**EMPLOYER SIZE (0-15 points):**
+- 100+ employees (required coverage): 15 points
+- 16-99 employees: 12 points
+- 6-15 employees: 8 points
+- 1-5 employees (may not have coverage): 3 points
+
+**THIRD PARTY LIABILITY (0-15 points):**
+- Clear third party fault (sue beyond WC): 15 points
+- Possible third party: 10 points
+- Employer only: 5 points
+
+**TIMEFRAME (0-10 points):**
+- Reported immediately: 10 points
+- Reported within 30 days: 8 points
+- Reported within 6 months: 5 points
+- Over 1 year: 0 points
+
+**RED FLAGS (Deductions):**
+- Failed to report timely: -15
+- Under influence at time of injury: -30
+- Independent contractor (not employee): -40
+- Injury occurred off company premises: -20
+                `.trim()
+            },
+            'estate-planning': {
+                title: 'Estate Planning / Probate',
+                formQuestions: [
+                    { q: 'What type of estate matter do you need help with?', type: 'dropdown', options: ['Creating a Will', 'Creating a Trust', 'Power of Attorney', 'Healthcare Directive', 'Probate Administration', 'Contesting a Will', 'Trust Administration', 'Estate Tax Planning', 'Other'] },
+                    { q: 'Is this for yourself or someone else?', type: 'dropdown', options: ['For myself (estate planning)', 'For deceased loved one (probate)', 'For elderly/incapacitated family member', 'For business succession planning'] },
+                    { q: 'If probate/inheritance issue, when did the person pass away?', type: 'date' },
+                    { q: 'Approximate value of the estate', type: 'dropdown', options: ['Under €50,000', '€50,000 - €200,000', '€200,000 - €500,000', '€500,000 - €1 million', 'Over €1 million', 'Unknown'] },
+                    { q: 'Does a Will or Trust already exist?', type: 'dropdown', options: ['Yes - Will exists', 'Yes - Trust exists', 'Yes - Both Will and Trust', 'No - Died intestate (no will)', 'Unknown'] },
+                    { q: 'What are the main assets involved?', type: 'dropdown', options: ['Real estate (home/property)', 'Business ownership', 'Bank accounts/investments', 'Retirement accounts', 'Multiple types of assets', 'Mostly personal property'] },
+                    { q: 'Are there any disputes among heirs/beneficiaries?', type: 'dropdown', options: ['Yes - Active disputes', 'Yes - Potential disputes', 'No - Family agrees', 'Only one beneficiary', 'Unknown'] },
+                    { q: 'How many beneficiaries/heirs are there?', type: 'dropdown', options: ['1-2', '3-4', '5-8', '9 or more', 'Unknown'] },
+                    { q: 'Describe your situation or what you need help with', type: 'paragraph' },
+                    { q: 'How urgent is this matter?', type: 'dropdown', options: ['Very urgent - Court deadlines', 'Urgent - Need to file soon', 'Moderately urgent', 'Planning ahead, not urgent'] }
+                ],
+                scoringCriteria: `
+**ESTATE VALUE (0-35 points):**
+- Over €1 million: 35 points
+- €500k - €1 million: 28 points
+- €200k - €500k: 20 points
+- €50k - €200k: 12 points
+- Under €50k: 5 points
+
+**COMPLEXITY (0-25 points):**
+- Business succession + multiple assets: 25 points
+- Multiple properties + investments: 20 points
+- Trust administration + tax issues: 18 points
+- Contested will/disputes: 15 points
+- Simple will creation: 8 points
+
+**URGENCY (0-20 points):**
+- Court deadlines imminent: 20 points
+- Probate needs to be filed: 15 points
+- Estate tax deadlines: 12 points
+- Planning ahead: 8 points
+
+**DISPUTES (0-10 points):**
+- Active litigation: 10 points
+- Likely disputes: 8 points
+- Potential issues: 5 points
+- No disputes: 2 points
+
+**CASE TYPE (0-10 points):**
+- Contested will/trust: 10 points
+- Complex trust administration: 9 points
+- Probate administration: 7 points
+- Will/trust creation: 5 points
+
+**RED FLAGS (Deductions):**
+- Statute of limitations passed: -30
+- No assets to work with: -20
+- Family refuses mediation: -10
+                `.trim()
+            },
+            'business-law': {
+                title: 'Business / Corporate Law',
+                formQuestions: [
+                    { q: 'What type of business legal matter?', type: 'dropdown', options: ['Business Formation/LLC Setup', 'Contract Review/Drafting', 'Partnership Dispute', 'Intellectual Property', 'Employment/HR Issues', 'Business Sale/Purchase', 'Commercial Litigation', 'Regulatory Compliance', 'Shareholder Dispute', 'Other'] },
+                    { q: 'What is your business type?', type: 'dropdown', options: ['Sole Proprietorship', 'Partnership', 'LLC', 'Corporation (S-Corp)', 'Corporation (C-Corp)', 'Startup/Not yet formed', 'Non-profit'] },
+                    { q: 'What is your business industry?', type: 'text' },
+                    { q: 'Annual revenue (approximate)', type: 'dropdown', options: ['Pre-revenue/Startup', 'Under €100k', '€100k - €500k', '€500k - €1M', '€1M - €5M', 'Over €5M'] },
+                    { q: 'How many employees/partners?', type: 'dropdown', options: ['Just me (solo)', '2-5', '6-15', '16-50', '50+'] },
+                    { q: 'Describe your legal issue or what you need help with', type: 'paragraph' },
+                    { q: 'Is this matter urgent?', type: 'dropdown', options: ['Emergency - Lawsuit filed/contract breach', 'Very urgent - Immediate business impact', 'Urgent - Needs resolution soon', 'Moderate urgency', 'Planning/preventative'] },
+                    { q: 'Are you currently in a dispute with another party?', type: 'dropdown', options: ['Yes - Litigation already started', 'Yes - Threatening litigation', 'Yes - Contract breach', 'Yes - Partner/shareholder dispute', 'No dispute'] },
+                    { q: 'Do you have existing business contracts/documents?', type: 'dropdown', options: ['Yes - Have contracts to review', 'Yes - Need new contracts drafted', 'No existing contracts', 'Need operating agreement', 'Need employment agreements'] },
+                    { q: 'What is your budget range for legal services?', type: 'dropdown', options: ['Under €2,000', '€2,000 - €5,000', '€5,000 - €10,000', '€10,000 - €25,000', 'Over €25,000', 'Open budget/depends on scope'] }
+                ],
+                scoringCriteria: `
+**BUSINESS SIZE/REVENUE (0-30 points):**
+- Over €5M revenue: 30 points
+- €1M - €5M: 25 points
+- €500k - €1M: 20 points
+- €100k - €500k: 15 points
+- Under €100k/startup: 8 points
+
+**MATTER URGENCY (0-25 points):**
+- Active litigation/emergency: 25 points
+- Imminent business threat: 20 points
+- Time-sensitive deal: 15 points
+- Moderate urgency: 10 points
+- Preventative/planning: 5 points
+
+**MATTER COMPLEXITY (0-25 points):**
+- Complex litigation + IP: 25 points
+- M&A/business sale: 22 points
+- Partnership dispute: 18 points
+- Contract negotiation: 12 points
+- Simple formation/compliance: 8 points
+
+**BUDGET/ABILITY TO PAY (0-15 points):**
+- Open budget/over €25k: 15 points
+- €10k - €25k: 12 points
+- €5k - €10k: 9 points
+- €2k - €5k: 6 points
+- Under €2k: 3 points
+
+**ONGOING RELATIONSHIP POTENTIAL (0-5 points):**
+- Established business needs ongoing counsel: 5 points
+- Growing business: 4 points
+- One-time matter: 2 points
+
+**RED FLAGS (Deductions):**
+- No budget/unclear funding: -15
+- Unrealistic expectations: -10
+- Matter outside attorney expertise: -20
+                `.trim()
+            }
+        };
+
+        document.getElementById('practiceArea').addEventListener('change', function() {
+            const area = this.value;
+            if (!area) {
+                document.getElementById('outputSection').classList.add('hidden');
+                return;
+            }
+
+            const data = practiceAreaData[area];
+            
+            // Show output section
+            document.getElementById('outputSection').classList.remove('hidden');
+
+            // Generate Form Questions JSON
+            const formQuestionsJSON = generateFormQuestionsJSON(data.formQuestions);
+            document.getElementById('formQuestions').querySelector('code').textContent = formQuestionsJSON;
+
+            // Generate AI Prompt
+            const aiPrompt = generateAIPrompt(data.title, data.formQuestions, data.scoringCriteria);
+            document.getElementById('aiPrompt').querySelector('code').textContent = aiPrompt;
+
+            // Generate Scoring Breakdown
+            document.getElementById('scoringBreakdown').innerHTML = `<pre class="whitespace-pre-wrap text-gray-300">${data.scoringCriteria}</pre>`;
+
+            // Scroll to output
+            document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        function generateFormQuestionsJSON(questions) {
+            const basicQuestions = [
+                { question: "What's your full name?", type: "text", required: true },
+                { question: "Phone number", type: "text", required: true },
+                { question: "Email address", type: "email", required: true }
+            ];
+
+            const formattedQuestions = questions.map(q => {
+                const obj = {
+                    question: q.q,
+                    type: q.type === 'paragraph' ? 'textarea' : q.type === 'dropdown' ? 'select' : 'text',
+                    required: true
+                };
+                if (q.options) {
+                    obj.options = q.options;
+                }
+                return obj;
+            });
+
+            return JSON.stringify([...basicQuestions, ...formattedQuestions], null, 2);
+        }
+
+        function generateAIPrompt(practiceTitle, questions, criteria) {
+            return `You are an expert ${practiceTitle} case evaluator for a law firm. Analyze this lead submission and provide a detailed score.
+
+LEAD DATA:
+${questions.map((q, i) => `${q.q}: {{$json.field_${i+3}}}`).join('\n')}
+
+SCORING CRITERIA:
+
+${criteria}
+
+Calculate total score (0-100) and assign priority:
+- 70-100: HIGH PRIORITY
+- 40-69: MEDIUM PRIORITY
+- 0-39: LOW PRIORITY
+
+Estimate case value based on case strength, potential damages, and likelihood of success.
+
+IMPORTANT: Respond with ONLY valid JSON, no other text:
+
+{
+  "score": <number 0-100>,
+  "priority": "HIGH" | "MEDIUM" | "LOW",
+  "reasoning": "<2-3 sentence explanation of score>",
+  "estimated_value": "$X,XXX - $XX,XXX" | "Unable to estimate",
+  "key_strengths": ["<list 2-3 case strengths>"],
+  "concerns": ["<list any concerns>"],
+  "recommendation": "ACCEPT_IMMEDIATELY" | "ACCEPT_WITH_REVIEW" | "NURTURE" | "DECLINE",
+  "next_action": "<what should happen next with this lead>"
+}`;
+        }
+
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId).querySelector('code').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                // Show success feedback
+                const button = event.target;
+                const originalText = button.textContent;
+                button.textContent = '✓ Copied!';
+                button.className = 'bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-lg';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.className = 'bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-lg';
+                }, 2000);
+            });
+        }
+
+        async function submitEmail() {
+            const email = document.getElementById('emailInput').value;
+            const button = document.getElementById('emailButton');
+            const successMsg = document.getElementById('emailSuccess');
+            const errorMsg = document.getElementById('emailError');
+            
+            // Validate email
+            if (!email || !email.includes('@')) {
+                alert('Please enter a valid email address');
+                return;
+            }
+            
+            // Disable button
+            button.disabled = true;
+            button.textContent = 'Sending...';
+            
+            try {
+                const response = await fetch('/api/subscribe', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email })
+                });
+                
+                if (response.ok) {
+                    successMsg.classList.remove('hidden');
+                    errorMsg.classList.add('hidden');
+                    document.getElementById('emailForm').classList.add('hidden');
+                } else {
+                    throw new Error('Failed to submit');
+                }
+            } catch (error) {
+                errorMsg.classList.remove('hidden');
+                successMsg.classList.add('hidden');
+                button.disabled = false;
+                button.textContent = 'Get Free Access';
+            }
+        }
+    </script>
+</body>
+</html>
